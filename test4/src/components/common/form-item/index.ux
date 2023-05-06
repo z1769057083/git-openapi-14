@@ -1,0 +1,122 @@
+<template>
+  <div class="ap-form-item">
+    <div class="ap-form-item__inner">
+      <div class="ap-form-item__label">
+        <text if="{{required}}" class="is-required">*</text>
+        <text if="{{!!label}}">{{ label }}</text>
+      </div>
+      <div class="ap-form-item__content ap-form-item__{{position || 'left'}}">
+        <div class="ap-form-item__wrap">
+          <slot></slot>
+        </div>
+
+        <div class="ap-form-item__error">
+          <text>{{ error }}</text>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  props: ['required', 'label', 'name', 'defaultValue', 'position'],
+
+  computed: {
+    error() {
+      let form = this.getForm();
+      if (form && form.getValidations) {
+        let validations = form.getValidations();
+        return validations?.[this.name]?.message;
+      }
+      return null;
+    }
+  },
+
+  onInit() {
+    this.$watch('defaultValue', this.setDefaultValue);
+    this.setDefaultValue();
+
+    if (this.required && this.name) {
+      this.$dispatch('registerValidation', {
+        field: this.name,
+        required: true
+      });
+    }
+  },
+
+  onDestroy() {
+    this.$dispatch('unRegisterValidation', this.name);
+  },
+
+  setDefaultValue() {
+    this.$dispatch('setDefaultValue', {
+      value: this.defaultValue,
+      field: this.name
+    });
+  },
+
+  /**
+   * 获取父元素实例
+   */
+  getForm(name = 'ap-form-container') {
+    let parent = this.$parent();
+    let parentName = parent._type;
+    while (parent && parent.$parent && parentName !== name) {
+      parent = parent.$parent();
+      if (!parent) return false;
+      parentName = parent._type;
+    }
+    return parent;
+  }
+};
+</script>
+
+<style lang="less">
+@import '@/static/styles/base.less';
+
+.ap-form-item {
+  width: 100%;
+  flex: 1;
+  line-height: 24 * @width;
+  padding: 12 * @width 0;
+  border-bottom: 1px solid #ebedf0;
+
+  align-items: center;
+  flex-direction: row;
+
+  &__inner {
+    width: 100%;
+  }
+
+  &__right {
+    justify-content: flex-end;
+  }
+
+  &__label {
+    width: 85 * @width;
+
+    text {
+      font-size: 15 * @width;
+    }
+  }
+
+  &__wrap {
+    flex-direction: row;
+  }
+
+  &__content {
+    flex: 1;
+    flex-direction: column;
+  }
+
+  &__error text {
+    color: red;
+    font-size: 12 * @width;
+  }
+
+  .is-required {
+    color: red;
+  }
+}
+</style>

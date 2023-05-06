@@ -1,0 +1,73 @@
+<import src="../common/form-item/index.ux" name="form-item"></import>
+<import src="./slider.ux" name="my-slider"></import>
+<template>
+  <div class="ap-input-range">
+    <form-item
+      label="{{data.label}}"
+      name="{{field}}"
+      default-value="{{data.defaultValue}}"
+      required="{{data.required}}"
+    >
+      <my-slider
+        min="{{data.min}}"
+        max="{{data.max || 100}}"
+        step="{{data.step}}"
+        default-value="{{data.defaultValue}}"
+        disabled="{{data.disabled}}"
+        onchange="onChange('Default')"
+        style-object="{{theme}}"
+      ></my-slider>
+    </form-item>
+  </div>
+</template>
+
+<script>
+import {getBindDataField, parseThemeColor} from '@/utils';
+
+export default {
+  props: ['node'],
+  data() {
+    return {
+      value: this.defaultValue
+    };
+  },
+  computed: {
+    id() {
+      return this.node.id;
+    },
+    data() {
+      return this.node.componentProperties.data;
+    },
+    field() {
+      return getBindDataField(this.data.bindInfo);
+    },
+    theme() {
+      let theme = this.node.componentProperties.style?.theme || {};
+      return {
+        'color': parseThemeColor(theme.backgroundColor || '#f0f0f0'),
+        'selected-color': parseThemeColor(theme.selectedColor || '#009688'),
+        'block-color': parseThemeColor(theme.blockColor)
+      };
+    }
+  },
+
+  onChange(slider, e) {
+    let value = e.detail.currentValue;
+    if (value !== this.value && this.field) {
+      this.value = value;
+      this.$dispatch('change', {
+        value: this.value,
+        field: this.field
+      });
+    }
+  }
+};
+</script>
+
+<style lang="less">
+@import '@/static/styles/base.less';
+
+.ap-input-range {
+  width: 100%;
+}
+</style>

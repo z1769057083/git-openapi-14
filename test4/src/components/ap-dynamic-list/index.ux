@@ -1,0 +1,203 @@
+<import src="../../renderer/tree.ux" name="component-tree"></import>
+<template>
+  <list
+    id="{{id}}"
+    class="section dynamic-list {{classNames}}"
+    onscrollbottom="loadMoreData"
+  >
+    <list-item
+      for="{{(index, row) in dataList}}"
+      type="product"
+      class="dynamic-data-item"
+      @click="clickHandler(index)"
+    >
+      <div
+        if="{{node && node.children && node.children.length > 0}}"
+        class="pack dynamic-item-wrap"
+        style="
+          marginBottom: {{layout.rowSpace}};
+          marginRight: {{layout.direction === 'horizontal' ? layout.columnSpace : (index + 1) % layout.columns === 0 ? 0 : layout.columnSpace}}
+        "
+      >
+        <div class="dynamic-item" if="{{style.mode === 'flow'}}">
+          <component-tree
+            scope-index="{{index}}"
+            items="{{node.children}}"
+            container="{{node}}"
+            page-id="{{pageId}}"
+          ></component-tree>
+        </div>
+
+        <stack class="dynamic-item-stack" else>
+          <component-tree
+            scope-index="{{index}}"
+            items="{{node.children}}"
+            container="{{node}}"
+            page-id="{{pageId}}"
+          ></component-tree>
+        </stack>
+      </div>
+    </list-item>
+
+    <list-item type="loadMore" class="load-more" if="{{status == 'loading'}}">
+      <progress type="circular"></progress>
+      <text>加载更多</text>
+    </list-item>
+
+    <list-item type="loadMore" class="empty-data" if="empty">
+      <image src="{{emptyImage}}"></image>
+      <text style="color: {{stype.tipColor}}">{{
+        data.emptyTip || '暂无内容'
+      }}</text>
+    </list-item>
+  </list>
+</template>
+
+<script>
+import {IComponent} from '@/types';
+import {getHttpImageUrl, getClasses} from '@/utils';
+import {APP_CONF} from '@/constants';
+import prompt from '@system.prompt';
+
+export default {
+  props: ['node', 'pageId'],
+  computed: {
+    id() {
+      return this.node.id;
+    },
+    style() {
+      let style = this.node.componentProperties.style || {};
+      return style;
+    },
+    classNames() {
+      return `dynamic-data ${
+        this.layout.direction === 'horizontal' ? 'scroll-x' : ''
+      } ${getClasses(this.node)}`;
+    },
+    layout() {
+      const {
+        columns = 1,
+        columnSpace = 10,
+        rowSpace = 10,
+        direction = 'vertical'
+      } = this.node.componentProperties.style.layout || {};
+      return {
+        columns,
+        columnSpace: toVw(columnSpace),
+        rowSpace: toVw(rowSpace),
+        direction
+      };
+    },
+    loadMode() {
+      return this.data.loadMode || 'none';
+    },
+    tipColor() {
+      return this.node.componentProperties.style.tipColor;
+    },
+    data() {
+      return this.node.componentProperties.data || {};
+    },
+    direction() {
+      let style = this.node.componentProperties.style || {};
+      return get(style, 'layout.direction', 'vertical');
+    },
+    dataList() {
+      let datasource = this.node.dataSource || {};
+      return datasource.state.data || [];
+    },
+    status() {
+      let datasource = this.node.dataSource;
+      if (datasource && datasource.isEnd && datasource.data.length > 0) {
+        return 'no-more';
+      }
+      return datasource && datasource.isLoading ? 'loading' : 'more';
+    },
+    empty() {
+      let datasource = this.node.dataSource || {};
+      return (
+        datasource.initialized && !datasource.data.length && datasource.isEnd
+      );
+    },
+    emptyImage() {
+      return this.data.emptyImage
+        ? getHttpImageUrl(this.data.emptyImage)
+        : getHttpImageUrl('/static/common/empty.png');
+    }
+  },
+  loadMoreData() {
+    if (this.loadMode === 'none') {
+      return;
+    }
+    this.node.dataSource?.dispatch?.('loadMore');
+  },
+  clickHandler(index) {
+    this.$emit('handleEvent', {...this.node, currentIndex: index});
+  }
+};
+</script>
+
+<style lang="less">
+@import '@/static/styles/base.less';
+
+.dynamic-list {
+  height: 100%;
+
+  .no-dynamic-data {
+    text-align: center;
+  }
+
+  .dynamic-item {
+    flex-direction: column;
+  }
+
+  .dynamic-item-wrap,
+  .dynamic-item {
+    flex: 1;
+  }
+}
+
+// .dynamic-item-stack {
+//   height: 100%;
+// }
+
+.dynamic-item-stack > div {
+  width: 100%;
+  height: 100%;
+}
+
+.dynamic-list .dynamic-data {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.dynamic-list .feed-bottom {
+  text-align: center;
+  color: #888;
+}
+
+.dynamic-list .tip {
+  text-align: center;
+  font-size: 13 * @width;
+  color: #666;
+  margin-top: 10 * @width;
+  width: 100%;
+}
+
+.empty-data {
+  text-align: center;
+
+  image {
+    width: 200 * @width;
+    margin: 100 * @width auto 20 * @width;
+  }
+
+  text {
+    font-size: 18 * @width;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    margin-bottom: 100 * @width;
+  }
+}
+</style>

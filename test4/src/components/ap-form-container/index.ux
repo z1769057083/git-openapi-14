@@ -1,0 +1,106 @@
+<import src="../../renderer/tree.ux" name="component-tree"></import>
+<template>
+  <div class="ap-form" id="{{id}}">
+    <component-tree
+      items="{{node.children}}"
+      container="{{node}}"
+      loop-index="{{loopIndex}}"
+      page-id="{{pageId}}"
+    ></component-tree>
+  </div>
+</template>
+
+<script lang="ts">
+import store from '@/store';
+
+export default {
+  props: ['node', 'loopIndex', 'pageId'],
+  name: 'ap-form-container',
+  computed: {
+    id() {
+      return this.node.id;
+    },
+    data() {
+      return this.node.componentProperties.data;
+    },
+    formId() {
+      return 'test';
+    }
+  },
+  onInit() {
+    this.$on('change', this.handlechange);
+    this.$on('setDefaultValue', this.setDefaultValue);
+    this.$on('registerValidation', this.registerValidation);
+    this.$on('unRegisterValidation', this.unRegisterValidation);
+  },
+
+  getPage() {
+    let page = store.getters.getPageStore(this.pageId);
+    return page;
+  },
+
+  getFormStore() {
+    const bindInfo = this.data?.bindInfo;
+    if (bindInfo) {
+      let pageStore = this.getPage();
+      return pageStore?.getters.getDataStore(this.data.bindInfo);
+    }
+    return null;
+  },
+
+  getValidations() {
+    return this.getFormStore()?.state.validations;
+  },
+
+  getFieldValue(bindInfo) {},
+
+  registerValidation(e) {
+    let data = e.detail;
+    let formStore = this.getFormStore();
+    if (formStore && data.field && data.required) {
+      formStore.dispatch('registerValidation', data);
+    }
+  },
+
+  unRegisterValidation(e) {
+    let field = e.detail;
+    let formStore = this.getFormStore();
+    console.log('unRegisterValidation', field);
+    if (formStore && field) {
+      formStore.dispatch('unRegisterValidation', field);
+    }
+  },
+
+  setDefaultValue(event) {
+    let formStore = this.getFormStore();
+    let {field, value} = event.detail || {};
+    if (
+      value !== undefined &&
+      formStore &&
+      formStore.getters.getFieldValue(field) === undefined
+    ) {
+      formStore?.commit('setFieldValue', event.detail);
+    }
+  },
+
+  handlechange(e) {
+    let formStore = this.getFormStore();
+    console.log('e', e.detail);
+    formStore?.commit('setFieldValue', e.detail);
+    formStore?.dispatch('validateFieldValue', e.detail?.field);
+  }
+};
+</script>
+
+<style lang="less">
+@import '@/static/styles/base.less';
+
+.ap-form {
+  flex-direction: column;
+  padding: 10 * @width 16 * @width;
+
+  &-item {
+    border-bottom: 1px solid #ebedf0;
+  }
+}
+</style>

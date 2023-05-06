@@ -1,0 +1,113 @@
+<import src="../../renderer/tree.ux" name="component-tree"></import>
+<template>
+  <tabs
+    class="tab-section {{classNames}}"
+    onchange="changeIndex"
+    index="{{tabIndex}}"
+  >
+    <tab-bar class="tab-bar" style="{{tabHeaderStyle}}">
+      <div
+        for="{{(index, item) in tabItems}}"
+        class="tab-bar-item {{index === activeIndex ? 'tab-bar-active' : ''}}"
+      >
+        <text
+          class="tab-bar-text"
+          style="color: {{index === activeIndex ? activeTabColor : tabColor}}"
+        >
+          {{ item.name }}
+        </text>
+        <div
+          class="active-line"
+          style="background-color: {{index === activeIndex ? activeTabColor : tabColor}}"
+        ></div>
+      </div>
+    </tab-bar>
+
+    <tab-content class="tab-content">
+      <div class="item-container" for="{{(index, item) in tabContents}}">
+        <component-tree
+          items="{{[tabContents[index]]}}"
+          container="{{node}}"
+          page-id="{{pageId}}"
+        >
+        </component-tree>
+      </div>
+    </tab-content>
+  </tabs>
+</template>
+
+<script>
+import {getClasses, parseThemeColor, toVw} from '@/utils';
+import {get} from '@/utils/helper';
+
+export default {
+  props: ['node', 'pageId'],
+  data: {
+    activeIndex: 0
+  },
+  computed: {
+    classNames() {
+      return getClasses(this.node);
+    },
+    tabHeaderStyle() {
+      let style = this.node.componentProperties.style;
+      let headerStyle = {};
+      if (style.tabBackgroundColor) {
+        headerStyle.backgroundColor = parseThemeColor(style.tabBackgroundColor);
+      }
+      return headerStyle;
+    },
+    activeTabColor() {
+      return this.node.componentProperties.style?.activeTabColor || '#ee0a24';
+    },
+    tabColor() {
+      return this.node.componentProperties.style?.tabColor || '#666666';
+    },
+    tabIndex() {
+      return get(this.node, 'componentProperties.data.activeIndex', 0);
+    },
+    tabItems() {
+      return get(this.node, 'componentProperties.data.items', []);
+    },
+    tabContents() {
+      return this.node.children || [];
+    }
+  },
+  changeIndex(e) {
+    this.activeIndex = +e.index;
+  },
+  onInit() {
+    this.activeIndex = +(this.tabIndex || 0);
+  }
+};
+</script>
+
+<style lang="less">
+@import '../common/styles/base.less';
+
+.tab-section {
+  .active-line {
+    width: 40 * @width;
+    height: 4 * @width;
+    visibility: hidden;
+    margin-top: 8 * @width;
+  }
+
+  .tab-bar-item {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .active-line:active {
+    visibility: visible;
+  }
+
+  .tab-container > .flow-section {
+    width: 100%;
+  }
+}
+
+.tab-bar-text {
+  font-size: 16 * @width;
+}
+</style>

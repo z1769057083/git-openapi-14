@@ -1,0 +1,49 @@
+<import src="./item.ux" name="component-item"></import>
+<template>
+  <block>
+    <component-item
+      key="{{index}}"
+      node="{{item}}"
+      for="{{(index, item) in items}}"
+      container="{{container}}"
+      index="{{index}}"
+      loop-data="{{loopData}}"
+      loop-index="{{loopIndex}}"
+      scope-index="{{scopeIndex}}"
+      page-id="{{pageId}}"
+    >
+    </component-item>
+  </block>
+</template>
+
+<script lang="ts">
+export default {
+  props: {
+    items: {
+      default: {}
+    },
+    scopeIndex: {
+      default: 0
+    },
+    index: {
+      default: 0
+    },
+    loopData: {
+      type: Object
+    },
+    loopIndex: {
+      default: []
+    },
+    container: {},
+    store: {},
+    pageId: {}
+  },
+  onInit() {}
+};
+</script>
+
+<style>
+.component-tree {
+  flex-direction: column;
+}
+</style>

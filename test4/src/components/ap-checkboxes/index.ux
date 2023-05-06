@@ -1,0 +1,109 @@
+<import src="../common/form-item/index.ux" name="form-item"></import>
+<import src="./checkbox.ux" name="my-checkbox"></import>
+<import src="./checkbox-group.ux" name="my-checkbox-group"></import>
+<template>
+  <div class="ap-checkboxes">
+    <form-item
+      label="{{data.label}}"
+      name="{{field}}"
+      default-value="{{data.defaultValue}}"
+      required="{{data.required}}"
+    >
+      <my-checkbox-group
+        id="group-{{id}}"
+        onchange="handleChange"
+        current="{{data.current}}"
+      >
+        <my-checkbox
+          group="group-{{id}}"
+          for="{{$item in data.options}}"
+          position="left"
+          value="{{$item.value}}"
+        >
+        </my-checkbox>
+      </my-checkbox-group>
+    </form-item>
+  </div>
+</template>
+
+<script lang="ts">
+import {getBindDataField} from '@/utils';
+
+export default {
+  props: ['node'],
+  computed: {
+    id() {
+      return this.node.id;
+    },
+    data() {
+      let data = this.node.componentProperties.data;
+      let options = data.options || [];
+
+      let defaultValue = options
+        .filter(option => option?.default)
+        .map(item => item.value)
+        .join(',');
+
+      if (!Array.isArray(options.slice?.())) {
+        console.warn(
+          `[组件属性]多选选项列表格式错误: ${JSON.stringify(options)}`
+        );
+        options = [];
+      }
+      options = options.map(item => ({
+        id: item.value,
+        value: item.label
+      }));
+
+      let selected =
+        data.value !== undefined ? String(data.value).split(',') : [];
+
+      return {
+        ...data,
+        options,
+        defaultValue,
+        selected,
+        current: options
+          .filter(item => selected.includes(item.id))
+          .map(item => item.value)
+      };
+    },
+    field() {
+      return getBindDataField(this.data.bindInfo);
+    }
+  },
+
+  onReady() {
+    const focus = String(this.data.autofocus) === 'true';
+    if (!focus) return; // 解决拉不起输入法的问题
+    this.$element('input').focus({focus: focus});
+  },
+
+  handleChange(event) {
+    let {options, selected} = this.data;
+    let value = options.find(item => item.value === event.detail?.value)?.id;
+
+    let newSelected = [...selected];
+
+    if (selected.includes(value)) {
+      newSelected = newSelected.filter(val => val !== value);
+    } else {
+      newSelected.push(value);
+    }
+    this.$dispatch('change', {
+      value: newSelected,
+      field: this.field
+    });
+  }
+};
+</script>
+
+<style lang="less">
+@import '@/static/styles/base.less';
+
+.ap-checkboxes {
+  .ap-form-item__inner {
+    justify-content: flex-start;
+  }
+}
+</style>

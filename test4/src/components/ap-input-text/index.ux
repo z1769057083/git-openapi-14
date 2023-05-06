@@ -1,0 +1,86 @@
+<import src="../common/form-item/index.ux" name="form-item"></import>
+<template>
+  <div class="ap-input {{ error ? 'ap-input-error' : '' }} ">
+    <form-item
+      label="{{data.label}}"
+      name="{{field}}"
+      default-value="{{data.defaultValue}}"
+      required="{{data.required}}"
+    >
+      <input
+        id="input"
+        class="ap-input-content"
+        type="{{data.type || 'text'}}"
+        maxlength="{{data.maxlength || '-1'}}"
+        placeholder="{{data.placeholder}}"
+        value="{{data.value}}"
+        if="{{data.disabled !== 'true'}}"
+        onchange="handleInputChange"
+        onfocus="handleInputFocus"
+        onblur="handleInputBlur"
+      />
+    </form-item>
+  </div>
+</template>
+<style lang="less">
+@import '@/static/styles/base.less';
+
+.ap-input {
+  &-right {
+    text-align: right;
+  }
+
+  &-error {
+    border: 1px solid @error-color;
+    input {
+      color: @error-color;
+    }
+  }
+
+  &-content {
+    font-size: 14 * @width;
+  }
+}
+</style>
+<script>
+import {getBindDataField} from '@/utils';
+
+export default {
+  props: ['node'],
+  computed: {
+    id() {
+      return this.node.id;
+    },
+    data() {
+      return this.node.componentProperties.data;
+    },
+    field() {
+      return getBindDataField(this.data.bindInfo);
+    }
+  },
+  onInit() {
+    this.$watch('value', 'watchValue');
+  },
+
+  onReady() {
+    const focus = String(this.data.autofocus) === 'true';
+    if (!focus) return; // 解决拉不起输入法的问题
+    this.$element('input').focus({focus: focus});
+  },
+
+  handleInputChange(event) {
+    this.$dispatch('change', {
+      value: event.value,
+      field: this.field
+    });
+  },
+
+  handleInputFocus(event) {
+    this.$emit('handleEvent', 'focus');
+  },
+
+  handleInputBlur(event) {
+    this.$emit('handleEvent', 'blur');
+  }
+};
+</script>

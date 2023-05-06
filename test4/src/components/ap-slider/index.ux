@@ -1,0 +1,90 @@
+<import src="../../renderer/tree.ux" name="component-tree"></import>
+
+<template>
+  <div class="ap-slider pack-item {{classNames}}">
+    <swiper
+      class="swiper"
+      indicator-color="{{options.indicatorColor}}"
+      indicator-selected-color="{{options.indicatorActiveColor}}"
+      vertical="{{!!options.vertical}}"
+      autoplay="{{!!options.autoplay}}"
+      interval="{{options.interval * 1000}}"
+      duration="{{options.duration * 1000}}"
+      indicator-size="7px"
+    >
+      <div for="{{(index, item) in items}}" class="swiper-item">
+        <image src="{{item.picture}}" onclick="onClick(item)"></image>
+      </div>
+    </swiper>
+  </div>
+</template>
+
+<script lang="ts">
+import {getClasses, getHttpImageUrl} from '@/utils';
+
+export default {
+  props: ['node', 'pageId'],
+  computed: {
+    items() {
+      return this.node?.componentProperties?.data?.items || [];
+    },
+    options() {
+      return this.node?.componentProperties?.data || {};
+    },
+    classNames() {
+      return getClasses(this.node);
+    }
+  },
+  getItemStyle(index) {
+    return {
+      'background-image': `url('${getHttpImageUrl(this.items[index].picture)}')`
+    };
+  },
+  onClick(item) {
+    let events = item.action?.click || [];
+    if (item.url && !events.length) {
+      if (/^http/.test(item.url)) {
+        events = [
+          {
+            action: 'URL',
+            target: '_self',
+            url: item.url
+          }
+        ];
+      } else {
+        events = [
+          {
+            action: 'REDIRECT-PAGE',
+            target: '_blank',
+            path: item.url
+          }
+        ];
+      }
+    }
+    this.$emit('handleEvent', {...this.node, events, actionType: 'click'});
+  }
+};
+</script>
+
+<style lang="less">
+.ap-slider {
+  transform: translateY(0);
+
+  .swiper,
+  .swiper-item {
+    height: 100%;
+  }
+  .swiper-item {
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}
+</style>

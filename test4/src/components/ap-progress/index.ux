@@ -1,0 +1,51 @@
+<template>
+  <div id="{{id}}" class="ap-progress {{classNames}}" onclick="onClick">
+    <progress
+      class="progerss progress-track"
+      percent="{{data.value}}"
+      style="color: {{progressStyle.color}};stroke-width: {{data.strokeWidth}}px"
+    ></progress>
+  </div>
+</template>
+
+<script>
+import {getClasses, parseThemeColor} from '@/utils';
+
+export default {
+  props: ['node'],
+  computed: {
+    id() {
+      return this.node.id;
+    },
+    data() {
+      return this.node.componentProperties.data;
+    },
+    classNames() {
+      return getClasses(this.node);
+    },
+    progressStyle() {
+      let style = this.node.componentProperties.style || {};
+      let styles = {};
+      if (style.activeColor) {
+        styles.color = parseThemeColor(style.activeColor);
+      }
+      if (style.bgColor) {
+        styles.layerColor = parseThemeColor(style.bgColor);
+      }
+      return styles;
+    }
+  },
+  onClick(e) {
+    if (this.node?.componentProperties?.data?.event?.click?.length) {
+      this.$emit('handleEvent', 'click');
+      e.stopPropagation();
+    }
+  }
+};
+</script>
+
+<style lang="less">
+.ap-progress {
+  flex-direction: column;
+}
+</style>

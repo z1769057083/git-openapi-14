@@ -1,0 +1,203 @@
+<import name="ap-icon" src="../common/icon/index"></import>
+
+<template>
+  <div class="apex-textarea" style="{{ textareaStyle }}">
+    <div class="apex-textarea-wrap">
+      <div class="apex-textarea-textarea-wrap">
+        <textarea
+          id="apex-textarea"
+          class="apex-textarea-textarea {{disabled? 'disabled' : ''}}"
+          style="{{ textareaStyle }}"
+          placeholder="{{ placeholder }}"
+          disabled="{{ disabled }}"
+          maxlength="{{ maxlength }}"
+          onchange="onChange"
+          onfocus="onFocus"
+          onblur="onBlur"
+        >
+          {{ inputValue }}
+        </textarea>
+      </div>
+      <div
+        class="apex-textarea-clear"
+        onclick="onClear"
+        if="{{clear && !disable && inputValue && inputValue.length > 0 }}"
+      >
+        <ap-icon type="close-circle" color="#B2B2B2" size="40"></ap-icon>
+      </div>
+      <div class="apex-textarea-extra" if="{{extra}}">
+        <text class="{{disabled? 'disabled' : ''}}">{{ extra }}</text>
+      </div>
+      <div else>
+        <slot name="extra"></slot>
+      </div>
+    </div>
+    <div class="apex-textarea-count" if="{{hasCount}}">
+      <text>
+        {{ inputValue.length }}/{{ maxlength === -1 ? '∞' : maxlength }}
+      </text>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      inputValue: this.defaultValue
+    };
+  },
+
+  props: {
+    label: {
+      type: String,
+      default: ''
+    },
+    extra: {
+      type: String,
+      default: ''
+    },
+    defaultValue: {
+      type: String,
+      default: ''
+    },
+    value: {
+      type: String,
+      default: ''
+    },
+    placeholder: {
+      type: String,
+      default: ''
+    },
+    disabled: {
+      type: Boolean,
+      default: false
+    },
+    maxlength: {
+      type: Number,
+      default: 140
+    },
+    focus: {
+      type: Boolean,
+      default: false
+    },
+    rows: {
+      type: Number,
+      default: 1
+    },
+    hasCount: {
+      type: Boolean,
+      default: false
+    },
+    clear: {
+      type: Boolean,
+      default: false
+    },
+    error: {
+      type: Boolean,
+      default: false
+    },
+    height: {
+      type: Number,
+      default: 48
+    }
+  },
+
+  computed: {
+    textareaStyle() {
+      return `height: ${this.rows * this.height}px;`;
+    }
+  },
+
+  onInit() {
+    this.$watch('value', () => {
+      this.inputValue = this.value;
+    });
+  },
+
+  onReady() {
+    const focus = this.focus.toString() === 'true';
+    if (!focus) return;
+    this.$element('apex-textarea').focus({focus: focus});
+  },
+
+  onClear() {
+    this.inputValue = '';
+  },
+
+  onChange(e) {
+    this.inputValue = e.value;
+    this.$emit('textareaChange', {value: this.inputValue});
+  },
+  onFocus() {
+    this.$emit('focus');
+  },
+  onBlur() {
+    this.$emit('blur');
+  }
+};
+</script>
+
+<style lang="less">
+@import '../common/styles/base.less';
+
+.apex-textarea {
+  flex-direction: column;
+
+  &-label {
+    margin-right: 10 * @width;
+    width: 150 * @width;
+    height: 24 * @width;
+    /* margin-top: -20px; */
+    text {
+      font-size: 16 * @width;
+      color: #000;
+      lines: 1;
+      text-overflow: ellipsis;
+      text-align: left;
+    }
+  }
+
+  &-textarea {
+    width: 100%;
+    /* height: 700px; */
+    font-size: 14 * @width;
+    line-height: 28 * @width;
+    color: #000;
+
+    &-wrap {
+      width: 100%;
+    }
+  }
+
+  &-extra {
+    margin: 0 5 * @width;
+    width: 30 * @width;
+    height: 24 * @width;
+    text {
+      font-size: 16 * @width;
+      color: #000;
+      lines: 1;
+      text-overflow: ellipsis;
+    }
+  }
+
+  &-clear {
+    margin: 0 5 * @width;
+    width: 30 * @width;
+    height: 24 * @width;
+  }
+
+  &-count {
+    justify-content: flex-end;
+    margin-right: 20px * @ratio;
+    text {
+      font-size: 30px * @ratio;
+    }
+  }
+
+  .disabled {
+    color: rgb(150, 150, 150);
+  }
+}
+</style>

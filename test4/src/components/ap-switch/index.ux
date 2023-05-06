@@ -1,0 +1,51 @@
+<import src="../common/form-item/index.ux" name="form-item"></import>
+<import src="./switch.ux" name="my-switch"></import>
+<template>
+  <div class="ap-switch">
+    <form-item
+      label="{{data.label}}"
+      name="{{field}}"
+      default-value="{{data.defaultValue}}"
+      required="{{data.required}}"
+    >
+      <my-switch
+        value="{{data.value}}"
+        onchange="changeHandler"
+        disabled="{{data.disabled}}"
+      ></my-switch>
+    </form-item>
+  </div>
+</template>
+
+<script lang="ts">
+import {getBindDataField} from '@/utils';
+
+export default {
+  props: ['node'],
+  computed: {
+    id() {
+      return this.node.id;
+    },
+    data() {
+      return this.node.componentProperties.data;
+    },
+    field() {
+      return getBindDataField(this.data.bindInfo);
+    }
+  },
+
+  changeHandler(event) {
+    this.$dispatch('change', {
+      value: event.detail.checked,
+      field: this.field
+    });
+  }
+};
+</script>
+
+<style lang="less">
+@import '@/static/styles/base.less';
+
+.ap-switch {
+}
+</style>

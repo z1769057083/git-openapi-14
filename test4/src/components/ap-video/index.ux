@@ -1,0 +1,54 @@
+<template>
+  <div class="ap-video {{classNames}}" onclick="onClick">
+    <video
+      src="{{options.source}}"
+      poster="{{options.poster}}"
+      object-fit="{{options.objectFit}}"
+      controls="{{options.controls}}"
+      autoplay="{{options.autoplay}}"
+      playcount="{{options.loop ? 'infinite' : 1}}"
+      muted="{{options.muted}}"
+    ></video>
+  </div>
+</template>
+
+<script>
+import {getClasses, getHttpImageUrl} from '@/utils';
+
+export default {
+  props: ['node'],
+  computed: {
+    options() {
+      let style = this.node?.componentProperties?.style;
+      let data = this.node?.componentProperties.data || {};
+      return {
+        ...data,
+        objectFit: style.objectFit,
+        controls: !!data.controls,
+        source: getHttpImageUrl(data.source),
+        poster: getHttpImageUrl(data.poster)
+      };
+    },
+    classNames() {
+      return getClasses(this.node);
+    }
+  },
+  onClick(e) {
+    if (this.node?.componentProperties?.data?.event?.click?.length) {
+      this.$emit('handleEvent', 'click');
+      e.stopPropagation();
+    }
+  }
+};
+</script>
+
+<style lang="less">
+.ap-video {
+  overflow: hidden;
+
+  video {
+    width: 100%;
+    height: 100%;
+  }
+}
+</style>

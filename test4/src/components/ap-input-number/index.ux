@@ -1,0 +1,54 @@
+<import src="../common/form-item/index.ux" name="form-item"></import>
+<import src="./input-number.ux" name="my-input-number"></import>
+<template>
+  <div class="ap-input-number">
+    <form-item
+      label="{{data.label}}"
+      field="{{field}}"
+      default-value="{{data.defaultValue}}"
+      required="{{data.required}}"
+    >
+      <my-input-number
+        value="{{data.value}}"
+        min="{{data.min || 0}}"
+        max="{{data.max}}"
+        step="{{data.step || 1}}"
+        onchange="handleChange"
+      >
+      </my-input-number>
+    </form-item>
+  </div>
+</template>
+
+<script>
+import {getBindDataField} from '@/utils';
+
+export default {
+  props: ['node'],
+  computed: {
+    id() {
+      return this.node.id;
+    },
+    data() {
+      return this.node.componentProperties.data;
+    },
+    field() {
+      return getBindDataField(this.data.bindInfo);
+    }
+  },
+
+  handleChange(event) {
+    this.$dispatch('change', {
+      value: event.detail.value,
+      field: this.field
+    });
+  }
+};
+</script>
+
+<style lang="less">
+@import '@/static/styles/base.less';
+
+.ap-input-number {
+}
+</style>

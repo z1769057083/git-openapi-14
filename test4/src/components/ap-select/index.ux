@@ -1,0 +1,89 @@
+<import src="../common/form-item/index.ux" name="form-item"></import>
+<import src="../common/icon/index.ux" name="my-icon"></import>
+<import src="./select.ux" name="my-select"></import>
+<template>
+  <div class="ap-select">
+    <form-item
+      label="{{data.label}}"
+      name="{{field}}"
+      position="right"
+      default-value="{{data.defaultValue}}"
+      required="{{data.required}}"
+    >
+      <div class="ap-select-result" onclick="open">
+        <text>{{ selectedValue }}</text>
+        <my-icon type="arrow-fwd" size="16"></my-icon>
+      </div>
+    </form-item>
+
+    <my-select id="select-{{id}}" oncomfirm="onConfirm"></my-select>
+  </div>
+</template>
+
+<script lang="ts">
+import {getBindDataField} from '@/utils';
+
+export default {
+  props: ['node'],
+  computed: {
+    id() {
+      return this.node.id;
+    },
+    data() {
+      let data = this.node.componentProperties.data;
+      let options = data.options || [];
+      if (!options || !Array.isArray(options?.slice?.())) {
+        options = [];
+      }
+      let defaultValue = options.find(item => item.default)?.value;
+
+      return {
+        ...data,
+        defaultValue,
+        options
+      };
+    },
+    field() {
+      return getBindDataField(this.data.bindInfo);
+    },
+    selectedValue() {
+      return (
+        this.data.options.find(item => item.value === this.data.value)?.label ||
+        ''
+      );
+    }
+  },
+
+  open() {
+    let options = this.data.options.map(item => item.label);
+    this.$child(`select-${this.id}`).showSelect({
+      options
+    });
+  },
+
+  onConfirm(e) {
+    let selectedValue =
+      this.data.options.find(item => item.label === e.detail?.data)?.value ||
+      '';
+    this.$dispatch('change', {
+      value: selectedValue,
+      field: this.field
+    });
+  }
+};
+</script>
+
+<style lang="less">
+@import '@/static/styles/base.less';
+
+.ap-select {
+  .ap-select-result {
+    justify-content: flex-end;
+    width: 100%;
+
+    text {
+      font-size: 14 * @width;
+    }
+  }
+}
+</style>

@@ -1,0 +1,97 @@
+<import name="component-tree" src="./tree.ux"></import>
+
+<!-- @if PLATFORM='quickapp' -->
+<import name="my-toast" src="../components/common/toast/index.ux"></import>
+<!-- @endif -->
+
+<template>
+  <div id="ap-page" class="ap-page {{classNames}}">
+    <component-tree items="{{items}}" page-id="{{pageId}}"></component-tree>
+
+    <!-- @if PLATFORM='quickapp' -->
+    <div if="{{modal}}" class="modal-wrap">
+      <component-tree
+        for="{{(index, node) in modal}}"
+        items="{{[node]}}"
+        page-id="{{pageId}}"
+      ></component-tree>
+    </div>
+
+    <my-toast id="toast"></my-toast>
+    <!-- @endif -->
+
+    <!-- <component-tree if="{{fixedBlock}}" items="{{fixedBlock}}" page-id="{{pageId}}">
+    </component-tree> -->
+  </div>
+</template>
+
+<script lang="ts">
+import store from '@/store';
+import {getClasses} from '@/utils';
+import {get} from '@/utils/helper';
+import toast from '@/utils/toast';
+import prompt from '@system.prompt';
+
+export default {
+  props: ['pageId'],
+  computed: {
+    page() {
+      let page = store.getters.getPageStore(this.pageId);
+      return page;
+    },
+    toast() {
+      return store.state.toastInfo;
+    },
+    items() {
+      let page = this.page;
+      return page.state.structor.children;
+    },
+    fixedBlock() {
+      let page = this.page;
+      const fixedBlock = page?.state.fixedBlock;
+      return fixedBlock ? [fixedBlock] : false;
+    },
+    modal() {
+      let page = this.page;
+      const modal = page?.state.modal?.children || [];
+      return modal.length ? modal : false;
+    },
+    classNames() {
+      return `ap-page-${this.pageId}`;
+    }
+  },
+  onReady() {
+    this.$watch('toast', () => {
+      let toastInfo = this.toast;
+      let toastDom = this.$child('toast');
+      if (toastDom) {
+        if (toastInfo.content || toastInfo.type) {
+          this.$child('toast').showToast(toastInfo);
+        } else {
+          this.$child('toast').hideToast();
+        }
+      } else if (toastInfo.content && toastInfo.type !== 'loading') {
+        prompt.showToast({
+          message: toastInfo.content
+        });
+      }
+    });
+  }
+};
+</script>
+
+<style lang="less">
+@import '../static/styles/base.less';
+
+.ap-page,
+.ap-pullrefresh,
+.page-item-wrap {
+  flex-direction: column;
+  width: 100%;
+}
+
+/* 最外层不能设置高度，手机屏幕旋转和折叠屏时会出问题 */
+/* .ap-page {
+  height: 100%;
+} */
+</style>

@@ -1,0 +1,55 @@
+<template>
+  <div id="{{id}}" class="pack-item ap-text {{classNames}}" onclick="onClick">
+    <text
+      class="content"
+      lines="{{data.lineClamp || -1}}"
+      text-overflow="ellipsis"
+    >
+      {{ data.text }}
+    </text>
+  </div>
+</template>
+
+<script>
+import {getClasses} from '@/utils';
+
+export default {
+  props: ['node'],
+  computed: {
+    id() {
+      return this.node.id;
+    },
+    data() {
+      return this.node.componentProperties.data;
+    },
+    classNames() {
+      return getClasses(this.node);
+    }
+  },
+  onClick(e) {
+    if (this.node?.componentProperties?.data?.event?.click?.length) {
+      this.$emit('handleEvent', 'click');
+      e.stopPropagation();
+    }
+  }
+};
+</script>
+
+<style lang="less">
+.ap-text {
+  overflow: visible;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  color: #555;
+  max-width: 100%;
+}
+
+.ap-text .content {
+  word-break: break-all;
+  overflow: hidden;
+  // width: 100%; 注意text设置宽度会导致flex异常
+  max-height: 100%;
+  // text-overflow: 'ellipsis'; // 注意需要设置到text属性里，这里设置无效
+}
+</style>

@@ -1,0 +1,13 @@
+<template>
+  <div class="ap-collapse-section"></div>
+</template>
+
+<script>
+// TODO 组件需要跟H5对齐
+import {IComponent} from '@/types';
+import {toVw} from '@/utils';
+
+export default {
+  props: ['node', 'loopDataList', 'pageId', 'scopeIndex', 'loopIndex']
+};
+</script>

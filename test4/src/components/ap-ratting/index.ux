@@ -1,0 +1,88 @@
+<import src="../common/form-item/index.ux" name="form-item"></import>
+<template>
+  <div class="ap-ratting">
+    <form-item
+      label="{{data.label}}"
+      name="{{field}}"
+      default-value="{{data.defaultValue}}"
+      required="{{data.required}}"
+    >
+      <div class="ap-ratting-wrap">
+        <rating
+          class="ap-ratting-stars"
+          numstars="{{data.count || 5}}"
+          rating="{{data.value}}"
+          stepsize="{{data.half ? 0.5 : 1}}"
+          indicator="{{data.disabled}}"
+          onchange="onchange"
+        >
+        </rating>
+      </div>
+    </form-item>
+  </div>
+</template>
+
+<style lang="less">
+@import '../common/styles/base.less';
+
+@font-face {
+  font-family: iconfont;
+  src: url('../common/icon/iconfonts.ttf');
+}
+
+.ap-ratting {
+  &-stars {
+    height: 24 * @width;
+  }
+}
+
+.ap-ratting-wrap {
+  flex-direction: row;
+}
+
+.rating-icon {
+  font-family: iconfont;
+  text-align: center;
+  font-size: 20 * @width;
+  color: #999;
+  margin-right: 5 * @width;
+}
+</style>
+
+<script>
+import {getBindDataField} from '@/utils';
+
+export default {
+  props: ['node'],
+  data() {
+    return {
+      icon: '&#xe912'
+    };
+  },
+  computed: {
+    id() {
+      return this.node.id;
+    },
+    data() {
+      return this.node.componentProperties.data;
+    },
+    field() {
+      return getBindDataField(this.data.bindInfo);
+    },
+    stars() {
+      return Array.from({length: this.data.count || 5}, () => '');
+    }
+  },
+  onchange(e) {
+    if (this.data.disabled) {
+      return false;
+    }
+    if (e.isFromUser) {
+      this.$dispatch('change', {
+        value: e.data?.rating,
+        field: this.field
+      });
+    }
+  }
+};
+</script>

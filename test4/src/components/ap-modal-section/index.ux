@@ -1,0 +1,218 @@
+<import src="../common/popup/index.ux" name="my-popup"></import>
+<import src="../../renderer/item.ux" name="component-item"></import>
+<template>
+  <div class="modal-section ap-Modal">
+    <my-popup
+      id="popup"
+      position="{{data.position || 'center'}}"
+      title="{{data.title}}"
+      open="{{isActiveModal}}"
+      closable="{{true}}"
+      onclose="onclose"
+      mask="{{data.overlay}}"
+      hasHeader="{{data.title}}"
+      mask-closable="{{maskClosable}}"
+      background="{{style.backgroundColor}}"
+    >
+      <div class="ap-Modal-content {{classNames}}">
+        <component-tree
+          name="default"
+          items="{{node.children}}"
+          container="{{node}}"
+          page-id="{{pageId}}"
+        ></component-tree>
+
+        <div class="{{buttonClassname}}" if="{{data.showButton}}">
+          <div
+            class="ap-Modal-button ap-Modal-button--primary"
+            if="{{showConfirm}}"
+            @click="handleClickClose('confirm')"
+          >
+            <text>{{ data.confirmButtonText || '确定' }}</text>
+          </div>
+          <div
+            class="ap-Modal-button"
+            if="{{showCancle}}"
+            @click="handleClickClose('cancel')"
+          >
+            <text>{{ data.cancelButtonText || '取消' }}</text>
+          </div>
+        </div>
+      </div>
+    </my-popup>
+  </div>
+</template>
+
+<script lang="ts">
+import {getClasses} from '@/utils';
+import Page from '@/utils/page';
+import store from '@/store';
+
+export default {
+  props: ['node', 'pageId'],
+  computed: {
+    id() {
+      return this.node?.id;
+    },
+    data() {
+      let data = this.node?.componentProperties.data || {};
+      return data;
+    },
+    maskClosable() {
+      return String(this.data.closeMode).includes('closeOnOutside');
+    },
+    style() {
+      let style = this.node?.componentProperties.style;
+      return style;
+    },
+    classNames() {
+      return getClasses(this.node);
+    },
+    showConfirm() {
+      return String(this.data.buttonOrientation)
+        .toLowerCase()
+        .includes('confirm');
+    },
+    showCancle() {
+      return String(this.data.buttonOrientation)
+        .toLowerCase()
+        .includes('cancel');
+    },
+    buttonClassname() {
+      let data = this.data;
+      let classname = `ap-Modal-buttons ap-Modal-buttons--${
+        data.buttonAlign || 'center'
+      }`;
+      if (data.buttonOrientation === 'cancelConfirm') {
+        classname += ` ap-Modal-buttons--reverse`;
+      }
+      return classname;
+    },
+    backgroundColor() {
+      return this.style.background?.backgroundColor || '#ffffff';
+    },
+    isInTabBar() {
+      let currentRoute = Page.getCurrentRoute();
+      return Page.isPageInTabBar(currentRoute);
+    },
+    closeMode() {
+      let data = this.node?.componentProperties.data || {};
+      return !!data.closeMode;
+    },
+    isActiveModal() {
+      let page = store.getters.getPageStore(this.pageId);
+      return (page?.state.activeModal || []).includes(this.node.id);
+    }
+  },
+  onInit() {
+    // 监听属性变化
+    this.$watch('isActiveModal', 'watchShow');
+  },
+  watchShow(newV, oldV) {
+    if (newV) {
+      this.$child('popup').show();
+      this.$emit('handleEvent', {
+        events: this.node?.componentProperties?.data?.event?.mount
+      });
+    } else {
+      this.$child('popup').hide();
+    }
+  },
+  onclose() {
+    this.$emit('handleEvent', {
+      events: this.node?.componentProperties?.data?.event?.unmount
+    });
+    this.$emit('handleClose');
+  },
+  handleClickClose(type) {
+    let data = this.data;
+    this.onclose();
+    if (type === 'confirm') {
+      this.$emit('handleEvent', {
+        events: data?.event?.confirmButton?.click
+      });
+    } else {
+      this.$emit('handleEvent', {
+        events: data?.event?.cancelButton?.click
+      });
+    }
+  }
+};
+</script>
+
+<style lang="less">
+@import '@/static/styles/base.less';
+
+.ap-Modal {
+  background: #ffffff;
+
+  .ap-Modal-content {
+    position: relative;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    border-radius: 10 * @width;
+  }
+
+  .ap-Modal-inner {
+    flex: 1;
+    overflow-y: scroll;
+  }
+
+  .ap-Modal-buttons {
+    margin: 15px 0;
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .ap-Modal-button {
+      background-color: #ffffff;
+      border: 1px solid #888;
+      color: #ffffff;
+      padding: 6 * @width 30 * @width;
+      border-radius: 2 * @width;
+      justify-content: center;
+      margin-right: 20 * @width;
+
+      text {
+        color: #888;
+        font-size: 14 * @width;
+      }
+
+      &--primary {
+        background-color: #256fff;
+        border-color: #256fff;
+        text {
+          color: #ffffff;
+        }
+      }
+    }
+
+    &--left {
+      justify-content: flex-start;
+    }
+
+    &--right {
+      justify-content: flex-end;
+    }
+
+    &--leftRight {
+      justify-content: space-between;
+    }
+
+    &--reverse {
+      flex-direction: row-reverse;
+    }
+  }
+
+  &--bottom {
+    .ap-Modal-buttons {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+    }
+  }
+}
+</style>

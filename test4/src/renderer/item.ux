@@ -1,0 +1,247 @@
+<import src="./tree.ux" name="component-tree"></import>
+<import src="../components/ap-custom-section" name="ap-custom-section"></import>
+<import src="../components/ap-flow-section" name="ap-flow-section"></import>
+<import src="../components/ap-button" name="ap-button"></import>
+<import src="../components/ap-text" name="ap-text"></import>
+<import src="../components/ap-lines" name="ap-lines"></import>
+<import src="../components/ap-image" name="ap-image"></import>
+
+<!-- NPM-CUSTOM-WIDGET-LIST -->
+<template>
+  <block>
+    <!-- 循环渲染需要特殊处理 -->
+    <block if="{{loopDataList}}" for="{{(index, loop) in loopDataList}}">
+      <ap-flow-section
+        if="{{!hidden && componentId === 'ap-flow-section'}}"
+        node="{{cloneNode}}"
+        @handle-event="handleEvent"
+        @handle-close="handleClose"
+        loop-data="{{loop}}"
+        scope-index="{{scopeIndex}}"
+        loop-index="{{(loopIndex || []).concat([index])}}"
+        page-id="{{pageId}}"
+      >
+      </ap-flow-section>
+
+      <ap-custom-section
+        if="{{!hidden && componentId === 'ap-custom-section'}}"
+        node="{{cloneNode}}"
+        @handle-event="handleEvent"
+        @handle-close="handleClose"
+        loop-data="{{loop}}"
+        scope-index="{{scopeIndex}}"
+        loop-index="{{(loopIndex || []).concat([index])}}"
+        page-id="{{pageId}}"
+      >
+      </ap-custom-section>
+    </block>
+
+    <block else>
+      <component
+        if="{{!hidden}}"
+        is="{{componentId}}"
+        node="{{cloneNode}}"
+        @handle-event="handleEvent"
+        @handle-close="handleClose"
+        loop-data="{{loopData}}"
+        scope-index="{{scopeIndex}}"
+        page-id="{{pageId}}"
+      >
+      </component>
+    </block>
+  </block>
+</template>
+
+<script lang="ts">
+import {set} from '@/utils/helper';
+import appStore from '@/store';
+import {deepClone} from '@/utils';
+import {IComponent} from '@/types';
+
+export default {
+  props: {
+    pageId: {},
+    node: {
+      required: true
+    },
+    scopeIndex: {
+      default: 0
+    },
+    index: {
+      default: 0
+    },
+    loopData: {},
+    loopIndex: {
+      default: []
+    },
+    container: {},
+    formStore: {}
+  },
+  computed: {
+    store() {
+      return appStore.getters.getPageStore(this.pageId);
+    },
+    isBadNetwork() {
+      const store = appStore.getters.getPageStore(this.pageId);
+      return (
+        store.state.isBadNetWorkCondition &&
+        store.state.pageDataList.some(item => item.state.isBadNetwork)
+      );
+    },
+    componentId() {
+      let componentId = this.node.componentId;
+      return `ap-${componentId}`;
+    },
+    isContainer() {
+      return this.node.type === 'section';
+    },
+    hidden() {
+      // 显示条件
+      const conditionValid = this.store?.getters.checkCondition(
+        this.node.componentProperties?.base?.condition,
+        {
+          scopeIndex: this.scopeIndex,
+          loopData: this.loopData
+        }
+      );
+      // 是否隐藏
+      let node = this.cloneNode;
+      return (
+        (this.isBadNetwork && !node.componentProperties.isBadNetworkNode) ||
+        !conditionValid ||
+        !node ||
+        node.componentProperties?.base?.hidden
+      );
+    },
+    cloneNode(state) {
+      let cloneNode = deepClone(this.node);
+      let container = this.container;
+      let store = this.store;
+      let formStore = this.formStore;
+      let loopData = this.loopData;
+      let index = this.index || 0;
+      let scopeIndex = this.scopeIndex || 0;
+      let componentProperties = Object.assign(
+        {
+          data: {},
+          style: {},
+          base: {}
+        },
+        {
+          ...cloneNode.componentProperties
+        }
+      );
+
+      // 流式容器内的元素不带宽高位置
+      if (
+        [
+          'modal-section',
+          'flow-section',
+          'form-entity',
+          'form-container',
+          'combo',
+          'column'
+        ].includes(container?.componentId || '') ||
+        container?.componentProperties?.style?.mode === 'flow'
+      ) {
+        componentProperties.isFlow = true;
+        try {
+          delete cloneNode.componentProperties.style.x;
+          delete cloneNode.componentProperties.style.y;
+
+          if (cloneNode.componentId === 'text') {
+            // delete cloneNode.componentProperties.style.height;
+          }
+        } catch (e) {
+          console.log('组件格式错误' + e);
+        }
+      }
+
+      // 父容器flex定位，根据当前组件属性设置伸缩属性
+      if (container?.componentProperties?.style?.display === 'flex') {
+        if (cloneNode.componentProperties.style.width > 0) {
+          set(componentProperties, 'style.flexSetting.flexShrink', 0);
+        }
+      }
+
+      // 固定定位 TODO: 后续统一成元素属性设置
+      if (container?.componentId === 'fixed-section') {
+        componentProperties.isFixed = true;
+      }
+
+      cloneNode.componentProperties = componentProperties;
+
+      // 分列容器间距处理
+      if (container?.componentId === 'column-section' && container) {
+        let columnSpace = container.componentProperties.style?.columnSpace || 0;
+        if (
+          columnSpace &&
+          index !== undefined &&
+          index < container.children.length - 1
+        ) {
+          set(cloneNode, 'componentProperties.style.marginRight', columnSpace);
+        }
+      }
+
+      // 绑定动态数据;
+      store?.commit('parseExpress', {
+        node: cloneNode,
+        params: {
+          currentIndex: scopeIndex,
+          loopData
+        }
+      });
+
+      store?.commit('addDynamicData', {
+        node: cloneNode,
+        options: {scopeIndex, formStore}
+      });
+
+      return cloneNode;
+    },
+
+    loopDataList() {
+      let loopRender = this.cloneNode!.componentProperties?.data?.loopRender;
+      if (loopRender?.value) {
+        let store = this.store;
+        let loopData = store?.getters.getAssignValue(loopRender, {
+          currentIndex: this.scopeIndex,
+          loopData: this.loopData
+        });
+        return Array.isArray(loopData?.slice?.()) ? loopData : [];
+      }
+      return null;
+    },
+
+    nodeData() {
+      return this.cloneNode?.componentProperties.data;
+    },
+
+    isActiveModal() {
+      return (this.store?.state.activeModal || []).includes(this.node.id);
+    }
+  },
+  handleClose() {
+    let pageStore = this.store;
+    pageStore?.commit('setActiveModal', {
+      nodeId: this.node.id,
+      operation: 'close'
+    });
+  },
+  handleEvent(e) {
+    let pageStore = this.store;
+    let component = this.cloneNode;
+    let type = typeof e.detail === 'string' ? e.detail : 'click';
+    pageStore?.dispatch('handleEvent', {
+      type,
+      props: {
+        ...component,
+        events: e.detail?.events,
+        loopIndex: this.loopIndex,
+        loopData: this.loopData,
+        scopeIndex: this.scopeIndex
+      }
+    });
+  }
+};
+</script>

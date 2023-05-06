@@ -1,0 +1,45 @@
+<import src="../../renderer/tree.ux" name="component-tree"></import>
+<template>
+  <div class="column-section {{classNames}}">
+    <component-tree
+      items="{{node.children}}"
+      container="{{node}}"
+      scope-index="{{scopeIndex}}"
+      loop-data="{{loopData}}"
+      loop-index="{{loopIndex}}"
+      page-id="{{pageId}}"
+    ></component-tree>
+  </div>
+</template>
+
+<script lang="ts">
+import {IComponent} from '@/types';
+import {getClasses} from '@/utils';
+
+export default {
+  props: [
+    'node',
+    'loopData',
+    'loopDataList',
+    'pageId',
+    'scopeIndex',
+    'loopIndex'
+  ],
+  computed: {
+    classNames() {
+      return getClasses(this.node);
+    }
+  }
+};
+</script>
+
+<style lang="less">
+.column-section {
+  display: flex;
+  flex-direction: row;
+  background-size: cover;
+  background-position: center center;
+  position: relative;
+  overflow: hidden;
+}
+</style>

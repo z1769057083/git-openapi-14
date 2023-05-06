@@ -1,0 +1,46 @@
+<script>
+/**
+ * @file 应用级别的配置，供所有页面公用
+ */
+
+import app from '@system.app';
+import webview from '@system.webview';
+import Constants from '@/constants/index';
+import router from '@system.router';
+import {installStore} from '@quickapp-eco/qappx';
+import {getStorage} from './utils/tools';
+import store from '@/store';
+import device from '@system.device';
+import notification from '@system.notification';
+
+const hook2global = global.__proto__ || global;
+
+// 将需要用到的模块，挂载于 qa 对象，全局可用；如 qa.prompt.[NAME]；
+hook2global.uni = {};
+
+export default {
+  // plugins: [installStore(store)],
+  onCreate() {
+    device.getInfo({
+      success: function (data) {
+        const {isFoldDevice, foldState} = data;
+        // 折叠屏初始化状态，后续的状态变更在页面生命周期里捕获
+        if (isFoldDevice) {
+          store.commit('setFoldState', +foldState === 1 ? 'expand' : 'fold');
+        }
+      }
+    });
+
+    // 用户信息缓存到本地
+    getStorage(Constants.USER_INFO_KEY)
+      .then(info => {
+        if (info) {
+          store.commi('setUserInfo', info);
+        }
+      })
+      .catch(e => {
+        console.log(e);
+      });
+  }
+};
+</script>

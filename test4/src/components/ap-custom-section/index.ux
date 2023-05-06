@@ -1,0 +1,56 @@
+<import src="../../renderer/item.ux" name="component-item"></import>
+<template>
+  <div class="custom-section {{classNames}}" onclick="onClick">
+    <stack class="stack" style="{{bgStyle}}">
+      <component-item
+        node="{{item}}"
+        for="{{(index, item) in node.children}}"
+        container="{{node}}"
+        scope-index="{{scopeIndex}}"
+        loop-data="{{loopData}}"
+        loop-index="{{loopIndex}}"
+        page-id="{{pageId}}"
+      ></component-item>
+    </stack>
+  </div>
+</template>
+
+<script lang="ts">
+import {getHttpImageUrl, getClasses} from '@/utils';
+
+export default {
+  props: ['node', 'loopData', 'pageId', 'scopeIndex', 'loopIndex'],
+  emits: ['handleEvent'],
+  computed: {
+    bgStyle() {
+      let {data} = this.node.componentProperties;
+      let styles = {};
+      if (data.backgroundImage) {
+        styles.backgroundImage = getHttpImageUrl(data.backgroundImage);
+      }
+      return styles;
+    },
+    classNames() {
+      return getClasses(this.node);
+    }
+  },
+  onClick(e) {
+    if (this.node?.componentProperties?.data?.event?.click?.length) {
+      this.$emit('handleEvent', 'click');
+      e.stopPropagation();
+    }
+  }
+};
+</script>
+
+<style lang="less">
+.custom-section {
+  background-size: cover;
+  background-position: center center;
+  overflow: hidden;
+
+  .stack {
+    width: 100%;
+  }
+}
+</style>

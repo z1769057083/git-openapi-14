@@ -1,0 +1,56 @@
+<import src="../../renderer/tree.ux" name="component-tree"></import>
+<template>
+  <div
+    class="flow-section {{classNames}}"
+    node-id="{{node.id}}"
+    style="{{bgStyle}}"
+    onclick="onClick"
+  >
+    <component-tree
+      if="{{node.children && node.children.length > 0}}"
+      items="{{node.children}}"
+      container="{{node}}"
+      scope-index="{{scopeIndex}}"
+      loop-data="{{loopData}}"
+      page-id="{{pageId}}"
+      loop-index="{{loopIndex}}"
+    >
+    </component-tree>
+  </div>
+</template>
+
+<script>
+import {getHttpImageUrl, getClasses} from '@/utils';
+
+export default {
+  props: ['node', 'pageId', 'loopData', 'scopeIndex', 'loopIndex'],
+  computed: {
+    bgStyle() {
+      let {data} = this.node.componentProperties;
+      let styles = {};
+      if (data.backgroundImage) {
+        styles.backgroundImage = getHttpImageUrl(data.backgroundImage);
+      }
+      return styles;
+    },
+    classNames() {
+      return getClasses(this.node);
+    }
+  },
+  onClick(e) {
+    if (this.node?.componentProperties?.data?.event?.click?.length) {
+      this.$emit('handleEvent', 'click');
+      e.stopPropagation();
+    }
+  }
+};
+</script>
+
+<style lang="less">
+.flow-section {
+  // flex-direction: column;
+  // flex-shrink: 0; // 不能默认添加，快应用端有bug
+  min-width: 1px;
+  overflow: visible;
+}
+</style>

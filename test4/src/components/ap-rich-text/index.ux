@@ -1,0 +1,51 @@
+<template>
+  <div
+    id="{{id}}"
+    class="pack-item ap-rich-text {{classNames}}"
+    onclick="onClick"
+  >
+    <richtext type="html" style="background-color: transparent">
+      {{ text }}
+    </richtext>
+  </div>
+</template>
+
+<script>
+import {getClasses} from '@/utils';
+import {Config} from '@/constants';
+
+export default {
+  props: ['node'],
+  computed: {
+    id() {
+      return this.node.id;
+    },
+    text() {
+      let data = this.node.componentProperties.data || {};
+      let text = String(data.text)
+        .replace(/\s+src="\/images\//, ` src="${Config.host}/images/`)
+        .replace(/<img/gi, '<img style="max-width:100%;height:auto" ');
+      return text;
+    },
+    classNames() {
+      return getClasses(this.node);
+    }
+  },
+  onClick(e) {
+    if (this.node?.componentProperties?.data?.event?.click?.length) {
+      this.$emit('handleEvent', 'click');
+      e.stopPropagation();
+    }
+  }
+};
+</script>
+
+<style lang="less">
+.ap-rich-text {
+  img,
+  video {
+    max-width: 100%;
+  }
+  text-align: left;
+}
+</style>

@@ -1,0 +1,119 @@
+<import src="../common/form-item/index.ux" name="form-item"></import>
+<import name="my-icon" src="../common/icon/index.ux"></import>
+<import name="my-calendar" src="../common/calendar/index.ux"></import>
+<template>
+  <div class="ap-input-date-range">
+    <form-item
+      label="{{data.label}}"
+      name="{{field}}"
+      onclick="openCalendar"
+      required="{{data.required}}"
+    >
+      <text class="selected-date">{{ selected }}</text>
+      <my-icon type="arrow-fwd" size="16"></my-icon>
+    </form-item>
+
+    <my-calendar
+      visible="{{open}}"
+      trip="round"
+      onschedule="getSchedule"
+    ></my-calendar>
+  </div>
+</template>
+<style lang="less">
+@import '@/static/styles/base.less';
+
+.ap-input-date-range {
+  .selected-date {
+    flex: 1;
+    text-align: right;
+    font-size: 14 * @width;
+  }
+}
+</style>
+<script>
+import {getBindDataField, dateFormat} from '@/utils';
+
+export default {
+  props: ['node'],
+  data() {
+    return {
+      roundTrip: {},
+      singleTrip: {},
+      open: false,
+      tripType: '',
+      moreTrip: {}
+    };
+  },
+  computed: {
+    id() {
+      return this.node.id;
+    },
+    data() {
+      return this.node.componentProperties.data;
+    },
+    selected() {
+      let data = this.data;
+      let inputFormat = data.inputFormat || 'YYYY-MM-DD';
+      if (data.value) {
+        let dateRange = String(data.value)
+          .split(',')
+          .map(timestamp => this.padTimestamp(timestamp));
+        return (
+          dateFormat(dateRange[0], data.inputFormat) +
+          '至' +
+          dateFormat(dateRange[1], data.inputFormat)
+        );
+      }
+      return data.placeholder || '请选择日期范围';
+    },
+    field() {
+      return getBindDataField(this.data.bindInfo);
+    }
+  },
+
+  padTimestamp(timestamp) {
+    if (/^\d+$/.test(timestamp) && String(timestamp).length === 10) {
+      timestamp = `${timestamp}000`; // js补3位时间戳
+    }
+    return timestamp;
+  },
+
+  onInit() {
+    this.$watch('value', 'watchValue');
+  },
+
+  openCalendar() {
+    if (this.data.disabled) {
+      return;
+    }
+    this.open = !this.open;
+  },
+
+  formatValue(dateArr) {
+    let format = this.data.format || 'X';
+    let result = dateArr.map(timestamp =>
+      format === 'X'
+        ? Math.round(timestamp / 1000)
+        : dateFormat(timestamp, format)
+    );
+    return result.join(',');
+  },
+
+  getSchedule(e) {
+    try {
+      let selected = JSON.parse(e.detail.data);
+      let {start, end} = selected;
+      this.$dispatch('change', {
+        value: this.formatValue([
+          +new Date(`${start.year}-${start.month}-${start.day}`),
+          +new Date(`${end.year}-${end.month}-${end.day}`)
+        ]),
+        field: this.field
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  }
+};
+</script>

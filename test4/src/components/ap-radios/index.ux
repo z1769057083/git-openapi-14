@@ -1,0 +1,88 @@
+<import src="../common/form-item/index.ux" name="form-item"></import>
+<import src="./radios.ux" name="my-radio"></import>
+<import src="./radio-group.ux" name="my-radio-group"></import>
+<template>
+  <div class="ap-radios">
+    <form-item
+      label="{{data.label}}"
+      name="{{field}}"
+      default-value="{{data.defaultValue}}"
+      required="{{data.required}}"
+    >
+      <my-radio-group
+        id="group-{{id}}"
+        onchange="handleChange"
+        current="{{data.current}}"
+      >
+        <my-radio
+          group="group-{{id}}"
+          for="{{$item in data.options}}"
+          position="left"
+          value="{{$item.value}}"
+        >
+        </my-radio>
+      </my-radio-group>
+    </form-item>
+  </div>
+</template>
+
+<script lang="ts">
+import {getBindDataField} from '@/utils';
+
+export default {
+  props: ['node'],
+  computed: {
+    id() {
+      return this.node.id;
+    },
+    data() {
+      let data = this.node.componentProperties.data;
+      let options = data.options || [];
+      let defaultValue = options.find(item => item.default)?.value;
+
+      if (!Array.isArray(options.slice?.())) {
+        console.warn(
+          `[组件属性]单选选项列表格式错误: ${JSON.stringify(options)}`
+        );
+        options = [];
+      }
+      options = options.map(item => ({
+        id: item.value,
+        value: item.label
+      }));
+      return {
+        ...data,
+        options,
+        defaultValue,
+        current: options.find(item => item.id === data.value)?.value
+      };
+    },
+    field() {
+      return getBindDataField(this.data.bindInfo);
+    }
+  },
+
+  onReady() {
+    const focus = String(this.data.autofocus) === 'true';
+    if (!focus) return; // 解决拉不起输入法的问题
+    this.$element('input').focus({focus: focus});
+  },
+
+  handleChange(event) {
+    let value = this.data.options.find(
+      item => item.value === event.detail?.value
+    )?.id;
+    this.$dispatch('change', {
+      value,
+      field: this.field
+    });
+  }
+};
+</script>
+
+<style lang="less">
+@import '@/static/styles/base.less';
+
+.ap-radios {
+}
+</style>

@@ -1,0 +1,93 @@
+<import src="../renderer/page.ux" name="ap-page"></import>
+<template>
+  <ap-page store="{{getPage()}}" page-id="{{pageId}}"></ap-page>
+</template>
+
+<script>
+import store from '@/store';
+import schema from './schema.json';
+import prompt from '@system.prompt';
+import device from '@system.device';
+import * as handler from './handler';
+
+export default {
+  protected: {
+    pageId: schema.id,
+    options: {},
+    isRefreshing: false
+  },
+
+  onInit(query) {
+    this.options = query;
+    // 判断是否折叠屏设备
+    device.getInfo({
+      success: function (data) {
+        const {isFoldDevice, foldState} = data;
+        if (isFoldDevice) {
+          store.commit('setFoldState', foldState === 1 ? 'expand' : 'fold');
+        }
+      }
+    });
+    this.loadPage();
+  },
+  onShow() {
+    let page = this.getPage();
+    if (!page) {
+      this.loadPage();
+    } else {
+      page.dispatch('checkNeedDeferReload');
+      // 执行onShow事件
+      page.dispatch('handlePageEvent', 'show');
+      page.dispatch('startLoopEvents');
+    }
+  },
+  onHide() {
+    let page = this.getPage();
+    page?.dispatch('handlePageEvent', 'hide');
+    page?.dispatch('stopLoopEvents');
+  },
+  onDestroy() {
+    let page = this.getPage();
+    page?.dispatch('handlePageEvent', 'unload');
+    page?.dispatch('stopLoopEvents', true);
+  },
+  onConfigurationChanged(params) {
+    let page = this.getPage();
+    page?.dispatch('handlePageEvent', 'configurationChange');
+    const {type = ''} = params;
+
+    if (/^foldState/.test(type)) {
+      store.commit(
+        'setFoldState',
+        type === 'foldStateExpand' ? 'expand' : 'fold'
+      );
+    }
+  },
+
+  getPage() {
+    let page = store.getters.getPageStore(this.pageId);
+    return page;
+  },
+
+  async loadPage(force) {
+    let query = this.options;
+    try {
+      await store.dispatch('initPage', {
+        pageId: this.pageId,
+        options: {query, force: false, schema, handler}
+      });
+      this.init = true;
+    } catch (e) {
+      console.warn('初始化错误', e);
+    }
+    if (this.isRefreshing) {
+      setTimeout(() => {
+        prompt.showToast({
+          message: '刷新完成'
+        });
+      }, 600);
+    }
+    this.isRefreshing = false;
+  }
+};
+</script>

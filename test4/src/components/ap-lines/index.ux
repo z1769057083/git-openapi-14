@@ -1,0 +1,33 @@
+<template>
+  <div id="{{id}}" class="ap-line {{classNames}}">
+    <div class="ap-line-content"></div>
+  </div>
+</template>
+
+<script>
+import {getClasses} from '@/utils';
+
+export default {
+  props: ['node'],
+  computed: {
+    id() {
+      return this.node.id;
+    },
+    classNames() {
+      return getClasses(this.node);
+    }
+  }
+};
+</script>
+
+<style lang="less">
+.ap-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .ap-line-content {
+    width: 100%;
+  }
+}
+</style>

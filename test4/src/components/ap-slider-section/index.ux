@@ -1,0 +1,65 @@
+<import src="../../renderer/tree.ux" name="component-tree"></import>
+
+<template>
+  <div class="section slider-section {{classNames}}">
+    <swiper
+      class="swiper"
+      indicator-color="{{options.indicatorColor}}"
+      indicator-selected-color="{{options.indicatorActiveColor}}"
+      vertical="{{!!options.vertical}}"
+      autoplay="{{!!options.autoplay}}"
+      indicator-size="7px"
+      interval="{{options.interval * 1000}}"
+      duration="{{options.duration * 1000}}"
+    >
+      <div class="swiper-item-wrap" for="{{(index, child) in children}}">
+        <stack class="swiper-item" style="{{styleList[index]}}">
+          <component-tree
+            items="{{child.children}}"
+            container="{{node}}"
+            page-id="{{pageId}}"
+          ></component-tree>
+        </stack>
+      </div>
+    </swiper>
+  </div>
+</template>
+
+<script lang="ts">
+import {getBackgroundStyle, getClasses} from '@/utils';
+import {IComponent} from '@/types';
+
+export default {
+  props: ['node', 'pageId'],
+  computed: {
+    children() {
+      return this.node?.children || [];
+    },
+    styleList() {
+      let children = this.children;
+      return children.map(child =>
+        getBackgroundStyle(child.componentProperties.style.background)
+      );
+    },
+    options() {
+      return this.node.componentProperties.data || {};
+    },
+    classNames() {
+      return getClasses(this.node);
+    }
+  }
+};
+</script>
+
+<style lang="less">
+.slider-section {
+  .swiper,
+  .swiper-item {
+    height: 100%;
+  }
+
+  .swiper-item {
+    width: 100%;
+  }
+}
+</style>

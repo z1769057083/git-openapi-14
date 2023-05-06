@@ -1,0 +1,44 @@
+{
+  "name": "aisuda-quickapp-runtime",
+  "version": "0.0.45-beta.2",
+  "description": "快应用运行时",
+  "files": [
+    "aisuda-quickapp-runtime.zip"
+  ],
+  "scripts": {
+    "start": "hap server --watch",
+    "prebuild:quickapp": "cross-env PLATFORM=quickapp node scripts/preprocess.js",
+    "prebuild:quickapp-card": "cross-env PLATFORM=quickapp-card node scripts/preprocess.js",
+    "build": "hap build",
+    "release": "npm run prebuild:quickapp-card && hap release",
+    "release:app": "npm run prebuild:quickapp && hap release",
+    "server": "hap server",
+    "watch": "hap watch"
+  },
+  "devDependencies": {
+    "@babel/preset-typescript": "^7.18.6",
+    "@types/quickapp": "npm:quickapp-interface@^1.0.0",
+    "babel-eslint": "^10.1.0",
+    "cross-env": "7.0.3",
+    "eslint": "^6.8.0",
+    "hap-toolkit": "1.9.10",
+    "less": "^3.12.2",
+    "less-loader": "^6.2.0",
+    "lint-staged": "^10.2.11",
+    "onchange": "^7.0.2",
+    "prettier": "^2.7.1",
+    "prettier-plugin-ux": "^0.3.0",
+    "typescript": "^4.7.4",
+    "eslint-plugin-ux": "^0.0.4",
+    "preprocess": "3.2.0"
+  },
+  "engines": {
+    "node": ">=8.10"
+  },
+  "browserslist": [
+    "chrome 65"
+  ],
+  "dependencies": {
+    "@quickapp-eco/qappx": "0.1.0" 
+  }
+}

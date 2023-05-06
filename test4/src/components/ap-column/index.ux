@@ -1,0 +1,33 @@
+<import src="../../renderer/tree.ux" name="component-tree"></import>
+<template>
+  <div class="ap-column {{classNames}}">
+    <component-tree
+      items="{{node.children}}"
+      container="{{node}}"
+      scope-index="{{scopeIndex}}"
+      loop-data="{{loopData}}"
+      loop-index="{{loopIndex}}"
+      page-id="{{pageId}}"
+    ></component-tree>
+  </div>
+</template>
+
+<script>
+import {IComponent} from '@/types';
+import {getClasses} from '@/utils';
+
+export default {
+  props: ['node', 'loopData', 'pageId', 'scopeIndex', 'loopIndex'],
+  computed: {
+    classNames() {
+      return getClasses(this.node);
+    }
+  }
+};
+</script>
+
+<style lang="less">
+.ap-column {
+  overflow: hidden;
+}
+</style>

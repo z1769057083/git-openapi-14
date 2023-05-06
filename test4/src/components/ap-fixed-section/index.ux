@@ -1,0 +1,27 @@
+<import src="../../renderer/item.ux" name="component-item"></import>
+<template>
+  <div class="section fixed-section {{isInTabBar ? 'in-tab' : ''}}">
+    <component-tree
+      items="{{node.children}}"
+      container="{{node}}"
+      page-id="{{pageId}}"
+    >
+    </component-tree>
+  </div>
+</template>
+
+<script lang="ts">
+import {IComponent} from '@/types';
+import Page from '@/utils/page';
+
+export default {
+  props: ['node', 'pageId'],
+  computed: {
+    isInTabBar() {
+      let currentRoute = Page.getCurrentRoute();
+      console.log('current route', currentRoute);
+      return Page.isPageInTabBar(currentRoute);
+    }
+  }
+};
+</script>

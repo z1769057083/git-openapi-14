@@ -1,0 +1,24 @@
+{
+  "exportAllImages": true,
+  "host": "http://127.0.0.1:8089",
+  "staticHost": "/static",
+  "loginErrorCode": [
+    "403",
+    "302",
+    "401"
+  ],
+  "company": {
+    "key": "44ba5",
+    "name": "ls"
+  },
+  "app": {
+    "key": "cde1cb0d6739",
+    "env": "dev",
+    "name": "git"
+  },
+  "pageMap": {
+    "/home": "k1Jw8ME8Gq"
+  },
+  "pages": [],
+  "api": {}
+}

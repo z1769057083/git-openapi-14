@@ -1,0 +1,184 @@
+{
+  "id": "k1Jw8ME8Gq",
+  "structor": {
+    "id": "root",
+    "type": "root",
+    "componentId": "page",
+    "children": [
+      {
+        "id": "a-0a198782",
+        "type": "section",
+        "componentId": "flow-section",
+        "children": [
+          {
+            "id": "a-a842e9fe",
+            "type": "element",
+            "componentId": "button",
+            "children": [],
+            "componentProperties": {
+              "base": {
+                "type": "default"
+              },
+              "data": {
+                "text": "按钮"
+              },
+              "style": {
+                "width": 120,
+                "height": 32,
+                "x": 62,
+                "y": 46,
+                "font": {
+                  "fontSize": 12,
+                  "textAlign": "center",
+                  "color": "rgba(255, 255, 255, 1)",
+                  "bold": true
+                },
+                "background": {
+                  "backgroundColor": "rgba(74, 144, 226, 1)"
+                },
+                "display": "block",
+                "box": {}
+              },
+              "id": "button-a-a842e9fe"
+            }
+          }
+        ],
+        "componentProperties": {
+          "style": {
+            "x": 76,
+            "y": 41,
+            "display": "flex",
+            "flexSetting": {
+              "align": "flex-start",
+              "direction": "column"
+            },
+            "box": {}
+          },
+          "id": "flow-section-a-0a198782"
+        }
+      },
+      {
+        "id": "a-22a31458",
+        "type": "section",
+        "componentId": "flow-section",
+        "children": [
+          {
+            "id": "a-bf13273a",
+            "type": "element",
+            "componentId": "text",
+            "children": [],
+            "componentProperties": {
+              "data": {
+                "text": "文本"
+              },
+              "style": {
+                "x": 54,
+                "y": 107,
+                "font": {
+                  "fontSize": 14
+                },
+                "boxShadow": {
+                  "x": 0,
+                  "y": 0,
+                  "size": 0,
+                  "blur": 0
+                },
+                "lineClamp": 1,
+                "display": "block",
+                "box": {}
+              },
+              "id": "text-a-bf13273a"
+            }
+          }
+        ],
+        "componentProperties": {
+          "style": {
+            "display": "flex",
+            "flexSetting": {
+              "align": "flex-start",
+              "direction": "column"
+            }
+          }
+        }
+      },
+      {
+        "id": "a-12a8ca48",
+        "type": "section",
+        "componentId": "flow-section",
+        "children": [
+          {
+            "id": "a-b98a4d2c",
+            "type": "element",
+            "componentId": "lines",
+            "children": [],
+            "componentProperties": {
+              "style": {
+                "type": "solid",
+                "lineColor": "#cccccc",
+                "lineWidth": 1,
+                "height": 10,
+                "width": 350,
+                "x": 90,
+                "y": 66
+              }
+            }
+          }
+        ],
+        "componentProperties": {
+          "style": {
+            "display": "flex",
+            "flexSetting": {
+              "align": "flex-start",
+              "direction": "column"
+            }
+          }
+        }
+      },
+      {
+        "id": "a-bff4363b",
+        "type": "section",
+        "componentId": "flow-section",
+        "children": [
+          {
+            "id": "a-65a1f510",
+            "type": "element",
+            "componentId": "image",
+            "children": [],
+            "componentProperties": {
+              "data": {
+                "imageUrl": ""
+              },
+              "style": {
+                "mode": "aspectFit",
+                "width": 160,
+                "height": 100,
+                "x": 79,
+                "y": 53,
+                "display": "block",
+                "box": {}
+              },
+              "id": "image-a-65a1f510"
+            }
+          }
+        ],
+        "componentProperties": {
+          "style": {
+            "display": "flex",
+            "flexSetting": {
+              "align": "flex-start",
+              "direction": "column"
+            }
+          }
+        }
+      }
+    ],
+    "componentProperties": {
+      "data": {
+        "variable": []
+      },
+      "style": {
+        "box": {}
+      }
+    }
+  }
+}

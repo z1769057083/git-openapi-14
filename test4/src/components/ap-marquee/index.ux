@@ -1,0 +1,61 @@
+<import name="ap-icon" src="../common/icon/index"></import>
+<template>
+  <div class="ap-marquee {{classNames}}" onclick="onClick">
+    <ap-icon type="vol-low" size="48" color="{{style.color}}"></ap-icon>
+    <marquee
+      id="marquee-{{id}}"
+      scrollamount="{{scrollSpeed}}"
+      loop="{{-1}}"
+      style="color: {{style.color}}"
+    >
+      {{ data.text }}
+    </marquee>
+  </div>
+</template>
+
+<script>
+import {getClasses} from '@/utils';
+
+export default {
+  props: ['node'],
+  computed: {
+    id() {
+      return this.node.id;
+    },
+    data() {
+      return this.node.componentProperties.data;
+    },
+    scrollSpeed() {
+      return (this.data.speed || 30) * 2;
+    },
+    classNames() {
+      return getClasses(this.node);
+    }
+  },
+  onReady() {
+    this.$element(`marquee-${this.id}`).start();
+  },
+  onClick(e) {
+    if (this.node?.componentProperties?.data?.event?.click?.length) {
+      this.$emit('handleEvent', 'click');
+      e.stopPropagation();
+    }
+  }
+};
+</script>
+
+<style lang="less">
+@import '@/static/styles/base.less';
+
+.ap-marquee {
+  overflow: hidden;
+  flex-direction: row;
+  display: flex;
+  align-items: center;
+  padding: 0;
+
+  .hap-marquee-text {
+    color: inherit;
+  }
+}
+</style>
